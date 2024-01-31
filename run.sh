@@ -27,7 +27,7 @@ getRDS(){
 
     if [ "$(echo "$rds" | wc -l)" -ne 3 ]; then
         echo "[+] Find RDS!"
-        echo $rds > ./rds/rds-$region.json
+        echo "$rds" > ./rds/rds-$region.json
         
     else
         echo "[-] Not found RDS!"
@@ -42,7 +42,7 @@ getEC2(){
 
     if [ "$(echo "$instances" | wc -l)" -ne 3 ]; then
         echo "[+] Find EC2!"
-        echo $instances > ./ec2/ec2-$region.json
+        echo "$instances" > ./ec2/ec2-$region.json
         
     else
         echo "[-] Not found EC2!"
@@ -56,7 +56,7 @@ getS3(){
 
     if [ "$(echo "$buckets" | wc -l)" -ne 7 ]; then
         echo "[+] Find S3!"
-        echo $buckets > ./s3/s3-global.json
+        echo "$buckets" > ./s3/s3-global.json
         
     else
         echo "[-] Not found S3!"
