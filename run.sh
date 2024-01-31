@@ -25,7 +25,7 @@ getRDS(){
 
     rds=$(aws rds describe-db-instances --region $region --output json)
 
-    if [ "$(echo "$rds" | wc -l)" -ne 3 ]; then
+    if [ "$(echo "$rds" | wc -l)" -gt 3 ]; then
         echo "[+] Find RDS!"
         echo "$rds" > ./rds/rds-$region.json
         
@@ -40,7 +40,7 @@ getEC2(){
 
     instances=$(aws ec2 describe-instances --region $region --output json)
 
-    if [ "$(echo "$instances" | wc -l)" -ne 3 ]; then
+    if [ "$(echo "$instances" | wc -l)" -gt 3 ]; then
         echo "[+] Find EC2!"
         echo "$instances" > ./ec2/ec2-$region.json
         
@@ -54,7 +54,7 @@ getEC2(){
 getS3(){
     buckets=$(aws s3api list-buckets --output json)
 
-    if [ "$(echo "$buckets" | wc -l)" -ne 7 ]; then
+    if [ "$(echo "$buckets" | wc -l)" -gt 7 ]; then
         echo "[+] Find S3!"
         echo "$buckets" > ./s3/s3-global.json
         
@@ -65,7 +65,8 @@ getS3(){
 }
 
 main(){
-    init   
+    init
+    
     #Global
     echo "[ ] Global"
 
