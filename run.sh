@@ -4,7 +4,6 @@ regions=(
     "us-east-1"
     "us-east-2"
     "us-west-1"
-    "us-west-2"
     "sa-east-1"
 )
 
@@ -16,7 +15,7 @@ init(){
     account_id="${account_id%%\"*}"
 
     mkdir -p $account_id && cd $account_id
-    mkdir -p ec2 s3 rds
+    mkdir ec2 s3 rds
 
 }
 
