@@ -15,7 +15,6 @@ init(){
     account_id="${account_id%%\"*}"
 
     mkdir -p $account_id && cd $account_id
-    mkdir ec2 s3 rds
 
 }
 
@@ -26,6 +25,7 @@ getRDS(){
 
     if [ "$(echo "$rds" | wc -l)" -gt 3 ]; then
         echo "[+] Find RDS!"
+        mkdir -r rds
         echo "$rds" > ./rds/rds-$region.json
         
     else
@@ -41,6 +41,7 @@ getEC2(){
 
     if [ "$(echo "$instances" | wc -l)" -gt 3 ]; then
         echo "[+] Find EC2!"
+        mkdir -r ec2
         echo "$instances" > ./ec2/ec2-$region.json
         
     else
@@ -55,6 +56,7 @@ getS3(){
 
     if [ "$(echo "$buckets" | wc -l)" -gt 7 ]; then
         echo "[+] Find S3!"
+        mkdir -r s3
         echo "$buckets" > ./s3/s3-global.json
         
     else
