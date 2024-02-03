@@ -42,14 +42,15 @@ def main():
 def saveInXlxs(account_dict):
     file_xlsx = openpyxl.Workbook()
 
+    #HEADER EC2
     file_xlsx.create_sheet('EC2')
     sheet = file_xlsx['EC2']
     sheet.append(['idInstance', 'name', 'state', 'type', 'ipPrivate', 'ipPublic', 'local','idAcconut'])
-    
+    #HEADER RDS
     file_xlsx.create_sheet('RDS')
     sheet = file_xlsx['RDS']
     sheet.append(['id', 'engine', 'status', 'type', 'local', 'idAccount'])
-    
+    #HEADER S3
     file_xlsx.create_sheet('S3')
 
     with open('log.json', 'w') as f:
@@ -104,12 +105,12 @@ def getServices():
                 getEC2FromFile(service_file_name)
             
             elif 'rds' in service_file_name:
-                print('RDS=>', service_file_name)
                 getRDSFromFile(service_file_name)
-            '''
+
             elif 's3' in service_file_name:
-                 print('S3=>', service_file_name)
-            '''
+                print('S3=>', service_file_name)
+                getS3FromFile(service_file_name)
+
         os.chdir(account_id_pwd)    #cd ..
 
     if ec2_list:
@@ -174,4 +175,19 @@ def getRDSFromFile(file_name):
 
         rds_list.append(rds_value)
 
+def getS3FromFile(file_name):
+    s3_json = None
+    s3_region = getRegionOfFileName(file_name)
+    global s3_list
+
+    with open(file_name, 'rb') as file_json:
+        s3_json = json.load(file_json)
+    
+    for bucket in s3_json['Buckets']:
+        s3_value = list()
+
+        s3_value.append(bucket['Name'])
+        s3_value.append(s3_region)
+
+        s3_list.append(s3_value)
 main()
