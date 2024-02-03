@@ -52,9 +52,8 @@ def saveInXlxs(account_dict):
     sheet.append(['id', 'engine', 'status', 'type', 'local', 'idAccount'])
     #HEADER S3
     file_xlsx.create_sheet('S3')
-
-    with open('log.json', 'w') as f:
-        json.dump(account_dict, f, indent=2)
+    sheet = file_xlsx['S3']
+    sheet.append(['name', 'local', 'idAccount'])
 
     for account_id in account_dict:
         sheet = None
@@ -74,9 +73,20 @@ def saveInXlxs(account_dict):
                     rds.append(int(account_id))  #add idAccount in last column
                     sheet.append(rds)
 
+            if account_dict[account_id]['s3']:
+                sheet = file_xlsx['S3']
+
+                for s3 in account_dict[account_id]['s3']:
+                    s3.append(int(account_id))  #add idAccount in last column
+                    sheet.append(s3)
+
         except KeyError as error:
+            #service not find in account
             pass
 
+    with open('log.json', 'w') as f:
+        json.dump(account_dict, f, indent=2)
+    
     file_xlsx.save('AWS.xlsx')
     file_xlsx.close()
 
@@ -108,7 +118,6 @@ def getServices():
                 getRDSFromFile(service_file_name)
 
             elif 's3' in service_file_name:
-                print('S3=>', service_file_name)
                 getS3FromFile(service_file_name)
 
         os.chdir(account_id_pwd)    #cd ..
