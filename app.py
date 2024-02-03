@@ -11,6 +11,8 @@ def main():
     account_list = getAccounts()
     pwd_root = os.getcwd()
     global ec2_list
+    global rds_list
+    global s3_list
 
     account_dict = dict()
 
@@ -38,25 +40,41 @@ def main():
         json.dump(account_dict, file_json, indent=2)
 
 def saveInXlxs(account_dict):
-    
-
     file_xlsx = openpyxl.Workbook()
 
     file_xlsx.create_sheet('EC2')
     sheet = file_xlsx['EC2']
     sheet.append(['idInstance', 'name', 'state', 'type', 'ipPrivate', 'ipPublic', 'local','idAcconut'])
+    
     file_xlsx.create_sheet('RDS')
+    sheet = file_xlsx['RDS']
+    sheet.append(['id', 'engine', 'status', 'type', 'local', 'idAccount'])
+    
     file_xlsx.create_sheet('S3')
+
+    with open('log.json', 'w') as f:
+        json.dump(account_dict, f, indent=2)
 
     for account_id in account_dict:
         sheet = None
 
-        if account_dict[account_id]['ec2']:
-            sheet = file_xlsx['EC2']
-           
-            for ec2 in account_dict[account_id]['ec2']:
-                ec2.append(account_id)
-                sheet.append(ec2)
+        try:
+            if account_dict[account_id]['ec2']:
+                sheet = file_xlsx['EC2']
+            
+                for ec2 in account_dict[account_id]['ec2']:
+                    ec2.append(int(account_id))  #add idAccount in last column
+                    sheet.append(ec2)
+
+            if account_dict[account_id]['rds']:
+                sheet = file_xlsx['RDS']
+
+                for rds in account_dict[account_id]['rds']:
+                    rds.append(int(account_id))  #add idAccount in last column
+                    sheet.append(rds)
+
+        except KeyError as error:
+            pass
 
     file_xlsx.save('AWS.xlsx')
     file_xlsx.close()
@@ -78,20 +96,21 @@ def getServices():
     service_dict = dict()
 
     for service_name in service_list:
-        os.chdir(service_name)
+        os.chdir(service_name)  #cd <servide_name>
         service_dict[service_name] = list()
 
         for service_file_name in os.listdir():
             if 'ec2' in service_file_name:
                 getEC2FromFile(service_file_name)
             
-            '''
             elif 'rds' in service_file_name:
                 print('RDS=>', service_file_name)
+                getRDSFromFile(service_file_name)
+            '''
             elif 's3' in service_file_name:
                  print('S3=>', service_file_name)
             '''
-        os.chdir(account_id_pwd)  
+        os.chdir(account_id_pwd)    #cd ..
 
     if ec2_list:
         service_dict['ec2'] = ec2_list
@@ -134,7 +153,25 @@ def getEC2FromFile(file_name):
                 ec2_values.append(None)
 
             ec2_values.append(ec2_region)
-
             ec2_list.append(ec2_values)
+
+def getRDSFromFile(file_name):
+    rds_json = None
+    rds_region = getRegionOfFileName(file_name)
+    global rds_list
+
+    with open(file_name, 'rb') as file_json:
+        rds_json = json.load(file_json)
+    
+    for db_instance in rds_json['DBInstances']:
+        rds_value = list()
+
+        rds_value.append(db_instance['DBInstanceIdentifier'])
+        rds_value.append(db_instance['Engine'])
+        rds_value.append(db_instance['DBInstanceStatus'])
+        rds_value.append(db_instance['DBInstanceClass'])
+        rds_value.append(rds_region)
+
+        rds_list.append(rds_value)
 
 main()
