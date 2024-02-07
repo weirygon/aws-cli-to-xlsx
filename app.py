@@ -6,6 +6,7 @@ import re
 ec2_list = list()
 rds_list = list()
 s3_list = list()
+elb_list = list()
 
 def main():
     account_list = getAccounts()
@@ -13,6 +14,7 @@ def main():
     global ec2_list
     global rds_list
     global s3_list
+    global elb_list
 
     account_dict = dict()
 
@@ -55,6 +57,11 @@ def saveInXlxs(account_dict):
     sheet = file_xlsx['S3']
     sheet.append(['name', 'local', 'idAccount'])
 
+    #HEADER ELB
+    file_xlsx.create_sheet('ELB')
+    sheet = file_xlsx['ELB']
+    sheet.append(['name', 'type', 'vpcId', 'state'])
+
     for account_id in account_dict:
         sheet = None
 
@@ -79,6 +86,13 @@ def saveInXlxs(account_dict):
                 for s3 in account_dict[account_id]['s3']:
                     s3.append(int(account_id))  #add idAccount in last column
                     sheet.append(s3)
+
+            if account_dict[account_id]['elb']:
+                sheet = file_xlsx['ELB']
+
+                for elb in account_dict[account_id]['elb']:
+                    elb.append(int(account_id)) #add idAccount in last calumn
+                    sheet.append(elb)
 
         except KeyError as error:
             #service not find in account
@@ -120,6 +134,9 @@ def getServices():
             elif 's3' in service_file_name:
                 getS3FromFile(service_file_name)
 
+            elif 'elb' in service_file_name:
+                getELBFromFile(service_file_name)
+
         os.chdir(account_id_pwd)    #cd ..
 
     if ec2_list:
@@ -128,7 +145,9 @@ def getServices():
         service_dict['rds'] = rds_list
     if s3_list:
         service_dict['s3'] = s3_list
-    
+    if elb_list:
+        service_dict['elb'] = elb_list
+
     return service_dict
 
 def getRegionOfFileName(file_name):
@@ -199,4 +218,23 @@ def getS3FromFile(file_name):
         s3_value.append(s3_region)
 
         s3_list.append(s3_value)
+
+def getELBFromFile(file_name):
+    elb_json = None
+    elb_json = getRegionOfFileName(file_name)
+    global elb_list
+
+    with open(file_name, 'rb') as file_json:
+        elb_json = json.load(file_json)
+
+    for elb in elb_json['LoadBalancers']:
+        elb_value = list()
+        
+        elb_value.append(elb['LoadBalancerName'])
+        elb_value.append(elb['Type'])
+        elb_value.append(elb['VpcId'])
+        elb_value.append(elb['State']['Code'])
+        
+        elb_list.append(elb_value)
+
 main()
