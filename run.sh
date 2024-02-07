@@ -3,12 +3,12 @@
 regions=(
     "us-east-1"
     "us-east-2"
-    "us-west-1"
     "sa-east-1"
-)
+    )
 
 init(){
     output=$(aws sts get-caller-identity)
+
 
     # Extrai o valor da propriedade "Account" (owner)
     account_id="${output#*\"Account\": \"}"
@@ -25,7 +25,7 @@ getRDS(){
 
     if [ "$(echo "$rds" | wc -l)" -gt 3 ]; then
         echo "[+] Find RDS!"
-        mkdir -r rds
+        mkdir -p rds
         echo "$rds" > ./rds/rds-$region.json
         
     else
@@ -41,7 +41,7 @@ getEC2(){
 
     if [ "$(echo "$instances" | wc -l)" -gt 3 ]; then
         echo "[+] Find EC2!"
-        mkdir -r ec2
+        mkdir -p ec2
         echo "$instances" > ./ec2/ec2-$region.json
         
     else
@@ -56,11 +56,25 @@ getS3(){
 
     if [ "$(echo "$buckets" | wc -l)" -gt 7 ]; then
         echo "[+] Find S3!"
-        mkdir -r s3
+        mkdir -p s3
         echo "$buckets" > ./s3/s3-global.json
         
     else
         echo "[-] Not found S3!"
+
+    fi
+}
+
+getELB(){
+    elb=$(aws elbv2 describe-load-balancers --region $region --output json )
+
+    if [ "$(echo "$elb" | wc -l)" -gt 3 ]; then
+        echo "[+] Find ELB!"
+        mkdir -p elb
+        echo "elb" > ./elb/elb-$region.json
+        
+    else
+        echo "[-] Not found ELB!"
 
     fi
 }
@@ -81,6 +95,7 @@ main(){
 
         getEC2 $region
         getRDS $region
+        getELB $region
 
         echo "========================="
     done
