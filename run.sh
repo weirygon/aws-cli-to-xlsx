@@ -71,7 +71,7 @@ getELB(){
     if [ "$(echo "$elb" | wc -l)" -gt 3 ]; then
         echo "[+] Find ELB!"
         mkdir -p elb
-        echo "elb" > ./elb/elb-$region.json
+        echo "$elb" > ./elb/elb-$region.json
         
     else
         echo "[-] Not found ELB!"
