@@ -7,6 +7,7 @@ ec2_list = list()
 rds_list = list()
 s3_list = list()
 elb_list = list()
+vpc_list = list()
 
 def main():
     account_list = getAccounts()
@@ -15,6 +16,7 @@ def main():
     global rds_list
     global s3_list
     global elb_list
+    global vpc_list
 
     account_dict = dict()
 
@@ -60,7 +62,12 @@ def saveInXlxs(account_dict):
     #HEADER ELB
     file_xlsx.create_sheet('ELB')
     sheet = file_xlsx['ELB']
-    sheet.append(['name', 'type', 'vpcId', 'state'])
+    sheet.append(['name', 'type', 'vpcId', 'state','idAccount'])
+
+    #HEADER VPC
+    file_xlsx.create_sheet('VPC')
+    sheet = file_xlsx['VPC']
+    sheet.append(['id', 'ipRange', 'state', 'name', 'idAccount'])
 
     for account_id in account_dict:
         sheet = None
@@ -93,6 +100,14 @@ def saveInXlxs(account_dict):
                 for elb in account_dict[account_id]['elb']:
                     elb.append(int(account_id)) #add idAccount in last calumn
                     sheet.append(elb)
+
+            if account_dict[account_id]['vpc']:
+                sheet = file_xlsx['VPC']
+
+                for vpc in account_dict[account_id]['vpc']:
+                    vpc.append(int(account_id)) #add idAccount in last calumn
+                    sheet.append(vpc)
+
 
         except KeyError as error:
             #service not find in account
@@ -136,6 +151,9 @@ def getServices():
 
             elif 'elb' in service_file_name:
                 getELBFromFile(service_file_name)
+            
+            elif 'vpc' in service_file_name:
+                getVPCFromFile(service_file_name)
 
         os.chdir(account_id_pwd)    #cd ..
 
@@ -147,6 +165,8 @@ def getServices():
         service_dict['s3'] = s3_list
     if elb_list:
         service_dict['elb'] = elb_list
+    if vpc_list:
+        service_dict['vpc'] = vpc_list
 
     return service_dict
 
@@ -236,5 +256,31 @@ def getELBFromFile(file_name):
         elb_value.append(elb['State']['Code'])
         
         elb_list.append(elb_value)
+
+def getVPCFromFile(file_name):
+    vpc_json = None
+    vpc_json = getRegionOfFileName(file_name)
+    global vpc_list
+
+    with open(file_name, 'rb') as file_json:
+        vpc_json = json.load(file_json)
+
+    for vpc in vpc_json['Vpcs']:
+        vpc_value = list()
+        #print(vpc, type(vpc))
+
+        vpc_value.append(vpc['VpcId'])
+        vpc_value.append(vpc['CidrBlock'])
+        vpc_value.append(vpc['State'])
+        if vpc['IsDefault']:
+            vpc_value.append('default')
+        else:
+            vpc_value.append(None)
+            if 'Tags' in vpc:
+                for tag in vpc.get('Tags', []):
+                    if tag['Key'] == 'Name':
+                            vpc_value[-1] = tag['Value']
+        
+        vpc_list.append(vpc_value)
 
 main()
