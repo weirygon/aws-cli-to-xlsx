@@ -2,29 +2,13 @@ import openpyxl
 import json
 import os
 import re
-
-ec2_list = list()
-rds_list = list()
-s3_list = list()
-elb_list = list()
-vpc_list = list()
+from getServices import getService as getService
 
 def main():
-    account_list = getAccounts()
     pwd_root = os.getcwd()
-    global ec2_list
-    global rds_list
-    global s3_list
-    global elb_list
-    global vpc_list
-
     account_dict = dict()
 
-    for id_account in account_list:
-        ec2_list = list()
-        rds_list = list()
-        s3_list = list()
-
+    for id_account in getIdAccounts():
         print(f'Account: {id_account}')
 
         try:
@@ -33,16 +17,14 @@ def main():
             print(f'[-] Directory Not Found: {id_account}')
             continue
 
-
-        services_account = getServices()
-        account_dict[id_account] = services_account
+        account_dict[id_account] = getService.ec2()
+        print(json.dumps(account_dict[id_account], indent=2))
 
         os.chdir(pwd_root)
-    
-    saveInXlxs(account_dict)
+    #saveInXlxs(account_dict)
     with open('log.json', 'w') as file_json:
         json.dump(account_dict, file_json, indent=2)
-
+'''
 def saveInXlxs(account_dict):
     file_xlsx = openpyxl.Workbook()
 
@@ -73,6 +55,8 @@ def saveInXlxs(account_dict):
         sheet = None
 
         try:
+            print(account_dict[account_id]['elb'])
+
             if account_dict[account_id]['ec2']:
                 sheet = file_xlsx['EC2']
             
@@ -95,9 +79,11 @@ def saveInXlxs(account_dict):
                     sheet.append(s3)
 
             if account_dict[account_id]['elb']:
+                print('if')
                 sheet = file_xlsx['ELB']
 
                 for elb in account_dict[account_id]['elb']:
+                    print(account_id, elb)
                     elb.append(int(account_id)) #add idAccount in last calumn
                     sheet.append(elb)
 
@@ -108,7 +94,6 @@ def saveInXlxs(account_dict):
                     vpc.append(int(account_id)) #add idAccount in last calumn
                     sheet.append(vpc)
 
-
         except KeyError as error:
             #service not find in account
             pass
@@ -118,8 +103,8 @@ def saveInXlxs(account_dict):
     
     file_xlsx.save('AWS.xlsx')
     file_xlsx.close()
-
-def getAccounts():
+'''
+def getIdAccounts():
     pwd=os.getcwd()
     pattern_regex = re.compile(r'^\d{12}$')
 
@@ -128,7 +113,7 @@ def getAccounts():
     account_list = [name for name in ls if os.path.isdir(os.path.join(pwd, name)) and pattern_regex.match(name)]
 
     return account_list
-
+'''
 def getServices():
     account_id_pwd = os.getcwd()
     
@@ -259,7 +244,7 @@ def getELBFromFile(file_name):
 
 def getVPCFromFile(file_name):
     vpc_json = None
-    vpc_json = getRegionOfFileName(file_name)
+    vpc_region = getRegionOfFileName(file_name)
     global vpc_list
 
     with open(file_name, 'rb') as file_json:
@@ -280,7 +265,9 @@ def getVPCFromFile(file_name):
                 for tag in vpc.get('Tags', []):
                     if tag['Key'] == 'Name':
                             vpc_value[-1] = tag['Value']
-        
+        vpc_value.append(vpc_region)
         vpc_list.append(vpc_value)
-
+    #for vpc in vpc_list:
+    #    print(vpc)
+'''
 main()
