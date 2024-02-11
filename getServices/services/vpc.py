@@ -1,7 +1,6 @@
 import json
 
 def get(file_name):
-    print('VPC vpc.py')
     vpc_list = list()
 
     with open(file_name, 'rb') as file_json:

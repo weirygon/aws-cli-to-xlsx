@@ -1,14 +1,11 @@
 import json
-def teste():
-    print('Teste no ec2.py')
 
 def get(file_name):
-    print('GET ec2.py')
-
+    ec2_list = list()
+    
     with open(file_name, 'rb') as file_json:
         ec2_json = json.load(file_json)
 
-    ec2_list = list()
     for reservation in ec2_json["Reservations"]:
         for instance in reservation["Instances"]:
             ec2_values = list()

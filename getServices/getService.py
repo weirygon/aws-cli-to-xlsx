@@ -17,10 +17,6 @@ def __init():   #Import directory resources/
     os.chdir(pwd_root)
 
 def all():
-    print('ALL')
-
-    print(os.getcwd())
-
     dict_services = dict()
 
     for service_name in os.listdir():
