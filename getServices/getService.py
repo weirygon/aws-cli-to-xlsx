@@ -18,6 +18,23 @@ def __init():   #Import directory resources/
 def all():
     print('ALL')
 
+    print(os.getcwd())
+
+    dict_services = dict()
+
+    for service_name in os.listdir():
+        dict_services[service_name] = dict()
+        os.chdir(service_name)
+
+        for file_name in os.listdir():
+            region = __getRegionFromFileName(file_name)
+            dict_services[service_name][region] = list()
+
+            dict_services[service_name][region].append(modules[service_name].get(file_name))
+            print(dict_services)
+            
+        os.chdir('..')  #cd <services>
+
 def ec2():
     try:
         os.chdir('ec2/')
@@ -41,7 +58,6 @@ def ec2():
             ec2_dict[region].append(ec2_module.get(file_name))
 
     os.chdir('..')
-    
     
     return ec2_dict
 
