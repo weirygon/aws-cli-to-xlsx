@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 
 modules = dict()
 
@@ -29,11 +30,13 @@ def all():
         for file_name in os.listdir():
             region = __getRegionFromFileName(file_name)
             dict_services[service_name][region] = list()
+           
+            for i in modules[service_name].get(file_name):
+                dict_services[service_name][region].append(i)
 
-            dict_services[service_name][region].append(modules[service_name].get(file_name))
-            print(dict_services)
-            
+
         os.chdir('..')  #cd <services>
+    return dict_services
 
 def ec2():
     try:
