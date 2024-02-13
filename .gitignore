@@ -1,4 +1,6 @@
 */
+!getServices/
+__pycache__
 AWS.xlsx
 log.json
 run.sh
